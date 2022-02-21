@@ -1,6 +1,8 @@
+import csv
+
 from msedge.selenium_tools import EdgeOptions, Edge
 from time import sleep
-
+from io import open
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 
@@ -19,7 +21,7 @@ def get_tweet_content(card1):
 
 
 def handle_cards(driver, topic):
-    tweets = []
+
 
     last_position = driver.execute_script("return window.pageYOffset;")
     scrolling = True
@@ -59,7 +61,7 @@ def get_tweet_data(card, topic):
     except NoSuchElementException:
         return
     tweet_content = get_tweet_content(card)
-    tweet = (tweet_handle, tweet_username, tweet_date_time, tweet_content, topic)
+    tweet = {'handle':tweet_handle, 'username':tweet_username, 'timestamp':tweet_date_time, 'content':tweet_content, 'topic':topic}
     return tweet
 
 
@@ -82,6 +84,7 @@ password.send_keys(Keys.RETURN)
 
 query = 'kosovo (from:avucic OR from:adv_djukanovic OR from:SerbianPM OR from:TomaMomirovic OR from:Nevena_Djuric93 OR from:AcaSapic OR from:ZoranT11 OR from:Vladimir_Orlic OR from:VucevicM OR from:markodjuric OR from:NesaStefanovic OR from:MarijanNSS OR from:Jakssa077 OR from:VjericaR OR from:AlekSeselj OR from:NemanjaSarovic OR from:BoskoObradovic OR from:SPDveri OR from:NovaStranka OR from:ArisMovsesijan OR from:demokrate OR from:ZoranLutovac OR from:SutanovacDragan OR from:PartizanusV)'
 tweet_ids = set()
+tweets = []
 for topic in constants.queries.keys():
     for query in constants.queries[topic]:
         sleep(4)
@@ -92,3 +95,9 @@ for topic in constants.queries.keys():
         search.send_keys(Keys.RETURN)
         sleep(6)
         handle_cards(driver, topic)
+
+with open('tweet_data.csv', 'w', encoding='utf-8', newline='') as f:
+    header = ['handle', 'username', 'timestamp', 'content', 'topic']
+    writer = csv.DictWriter(f, fieldnames=header)
+    writer.writeheader()
+    writer.writerows(tweets)
