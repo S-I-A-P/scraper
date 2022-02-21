@@ -2,37 +2,36 @@ import csv
 
 from msedge.selenium_tools import EdgeOptions, Edge
 from time import sleep
-from io import open
+# from io import open
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 
 import constants
 
 
-def get_tweet_content(card1):
+def get_tweet_content_and_language(card1):
     content_div = card1.find_element_by_xpath(
         'descendant::div[@class="css-901oao r-1fmj7o5 r-37j5jr r-a023e6 r-16dba41 r-rjixqe r-bcqeeo r-bnwqim r-qvutc0"]'
     )
+    language = content_div.get_attribute('lang')
     spans = content_div.find_elements_by_xpath('.//span')
     text = ""
     for s in spans:
         text += s.text
-    return text
+    return text, language
 
 
 def handle_cards(driver, topic):
-
-
     last_position = driver.execute_script("return window.pageYOffset;")
     scrolling = True
     while scrolling:
         cards = driver.find_elements_by_xpath('//article[@data-testid="tweet"]')
         for card in cards[-15:]:
             tweet = get_tweet_data(card, topic)
-            print(tweet)
             if tweet:
-                tweet_id = ''.join(tweet)
+                tweet_id = ''.join(tweet['handle'] + tweet['timestamp'] + tweet['topic'])
                 if tweet_id not in tweet_ids:
+                    print(tweet)
                     tweet_ids.add(tweet_id)
                     tweets.append(tweet)
         scroll_attempt = 0
@@ -60,8 +59,9 @@ def get_tweet_data(card, topic):
         tweet_date_time = card.find_element_by_xpath('.//time').get_attribute('dateTime')
     except NoSuchElementException:
         return
-    tweet_content = get_tweet_content(card)
-    tweet = {'handle':tweet_handle, 'username':tweet_username, 'timestamp':tweet_date_time, 'content':tweet_content, 'topic':topic}
+    (tweet_content, tweet_language) = get_tweet_content_and_language(card)
+    tweet = {'handle': tweet_handle, 'username': tweet_username, 'timestamp': tweet_date_time, 'content': tweet_content,
+             'topic': topic, 'language': tweet_language}
     return tweet
 
 
@@ -96,8 +96,9 @@ for topic in constants.queries.keys():
         sleep(6)
         handle_cards(driver, topic)
 
-with open('tweet_data.csv', 'w', encoding='utf-8', newline='') as f:
-    header = ['handle', 'username', 'timestamp', 'content', 'topic']
+with open('tweet_data.csv', 'w', encoding='utf8', newline='') as f:
+    header = ['handle', 'username', 'timestamp', 'content', 'topic', 'language']
     writer = csv.DictWriter(f, fieldnames=header)
     writer.writeheader()
+    print(len(tweets))
     writer.writerows(tweets)
