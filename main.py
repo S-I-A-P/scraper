@@ -1,17 +1,66 @@
 from msedge.selenium_tools import EdgeOptions, Edge
 from time import sleep
+
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 
 import constants
 
 
 def get_tweet_content(card1):
-    content = card1.find_element_by_xpath(
-        '//div[@class="css-901oao r-1fmj7o5 r-37j5jr r-a023e6 r-16dba41 r-rjixqe r-bcqeeo r-bnwqim r-qvutc0"]')
-    spans = content.find_elements_by_xpath('.//span')
+    content_div = card1.find_element_by_xpath(
+        'descendant::div[@class="css-901oao r-1fmj7o5 r-37j5jr r-a023e6 r-16dba41 r-rjixqe r-bcqeeo r-bnwqim r-qvutc0"]'
+    )
+    spans = content_div.find_elements_by_xpath('.//span')
+    text = ""
     for s in spans:
-        print(s.text)
-    print('_____________________________________________________')
+        text += s.text
+    return text
+
+
+def handle_cards(driver):
+    tweets = []
+    tweet_ids = set()
+    last_position = driver.execute_script("return window.pageYOffset;")
+    scrolling = True
+    while scrolling:
+        cards = driver.find_elements_by_xpath('//article[@data-testid="tweet"]')
+        for card in cards[-15:]:
+            tweet = get_tweet_data(card)
+            print(tweet)
+            if tweet:
+                tweet_id = ''.join(tweet)
+                if tweet_id not in tweet_ids:
+                    tweet_ids.add(tweet_id)
+                    tweets.append(tweet)
+        scroll_attempt = 0
+        while True:
+            driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+            sleep(1)
+            curr_position = driver.execute_script("return window.pageYOffset;")
+            if last_position == curr_position:
+                scroll_attempt += 1
+                if scroll_attempt >= 3:
+                    scrolling = False
+                    break
+                else:
+                    sleep(2)
+            else:
+                last_position = curr_position
+                break
+    return tweets
+
+
+def get_tweet_data(card):
+    tweet_handle = card.find_element_by_xpath('.//span[contains(text(),"@")]').text
+    tweet_username = card.find_element_by_xpath('.//span').text
+    try:
+        tweet_date_time = card.find_element_by_xpath('.//time').get_attribute('dateTime')
+    except NoSuchElementException:
+        return
+    tweet_content = get_tweet_content(card)
+    tweet = (tweet_handle, tweet_username, tweet_date_time, tweet_content)
+    return tweet
 
 
 options = EdgeOptions()
@@ -37,8 +86,5 @@ search = driver.find_element_by_xpath('//input[@placeholder="Search Twitter"]')
 search.send_keys(query)
 search.send_keys(Keys.RETURN)
 sleep(6)
-cards = driver.find_elements_by_xpath('//div[@class="css-1dbjc4n r-1iusvr4 r-16y2uox r-1777fci r-kzbkwu"]')
 
-for i in range(len(cards)):
-    card = cards[i]
-    get_tweet_content(card)
+handle_cards(driver)
