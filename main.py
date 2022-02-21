@@ -81,10 +81,14 @@ password.send_keys(constants.password)
 password.send_keys(Keys.RETURN)
 
 query = 'kosovo (from:avucic OR from:adv_djukanovic OR from:SerbianPM OR from:TomaMomirovic OR from:Nevena_Djuric93 OR from:AcaSapic OR from:ZoranT11 OR from:Vladimir_Orlic OR from:VucevicM OR from:markodjuric OR from:NesaStefanovic OR from:MarijanNSS OR from:Jakssa077 OR from:VjericaR OR from:AlekSeselj OR from:NemanjaSarovic OR from:BoskoObradovic OR from:SPDveri OR from:NovaStranka OR from:ArisMovsesijan OR from:demokrate OR from:ZoranLutovac OR from:SutanovacDragan OR from:PartizanusV)'
-sleep(4)
-search = driver.find_element_by_xpath('//input[@placeholder="Search Twitter"]')
-search.send_keys(query)
-search.send_keys(Keys.RETURN)
-sleep(6)
 
-handle_cards(driver)
+for k in constants.queries.keys():
+    for q in constants.queries[k]:
+        sleep(4)
+        search = driver.find_element_by_xpath('//input[@placeholder="Search Twitter"]')
+        search.send_keys(Keys.CONTROL + "a")
+        search.send_keys(Keys.DELETE)
+        search.send_keys(q)
+        search.send_keys(Keys.RETURN)
+        sleep(6)
+        handle_cards(driver)
