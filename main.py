@@ -18,15 +18,15 @@ def get_tweet_content(card1):
     return text
 
 
-def handle_cards(driver):
+def handle_cards(driver, topic):
     tweets = []
-    tweet_ids = set()
+
     last_position = driver.execute_script("return window.pageYOffset;")
     scrolling = True
     while scrolling:
         cards = driver.find_elements_by_xpath('//article[@data-testid="tweet"]')
         for card in cards[-15:]:
-            tweet = get_tweet_data(card)
+            tweet = get_tweet_data(card, topic)
             print(tweet)
             if tweet:
                 tweet_id = ''.join(tweet)
@@ -51,7 +51,7 @@ def handle_cards(driver):
     return tweets
 
 
-def get_tweet_data(card):
+def get_tweet_data(card, topic):
     tweet_handle = card.find_element_by_xpath('.//span[contains(text(),"@")]').text
     tweet_username = card.find_element_by_xpath('.//span').text
     try:
@@ -59,7 +59,7 @@ def get_tweet_data(card):
     except NoSuchElementException:
         return
     tweet_content = get_tweet_content(card)
-    tweet = (tweet_handle, tweet_username, tweet_date_time, tweet_content)
+    tweet = (tweet_handle, tweet_username, tweet_date_time, tweet_content, topic)
     return tweet
 
 
@@ -81,14 +81,14 @@ password.send_keys(constants.password)
 password.send_keys(Keys.RETURN)
 
 query = 'kosovo (from:avucic OR from:adv_djukanovic OR from:SerbianPM OR from:TomaMomirovic OR from:Nevena_Djuric93 OR from:AcaSapic OR from:ZoranT11 OR from:Vladimir_Orlic OR from:VucevicM OR from:markodjuric OR from:NesaStefanovic OR from:MarijanNSS OR from:Jakssa077 OR from:VjericaR OR from:AlekSeselj OR from:NemanjaSarovic OR from:BoskoObradovic OR from:SPDveri OR from:NovaStranka OR from:ArisMovsesijan OR from:demokrate OR from:ZoranLutovac OR from:SutanovacDragan OR from:PartizanusV)'
-
-for k in constants.queries.keys():
-    for q in constants.queries[k]:
+tweet_ids = set()
+for topic in constants.queries.keys():
+    for query in constants.queries[topic]:
         sleep(4)
         search = driver.find_element_by_xpath('//input[@placeholder="Search Twitter"]')
         search.send_keys(Keys.CONTROL + "a")
         search.send_keys(Keys.DELETE)
-        search.send_keys(q)
+        search.send_keys(query)
         search.send_keys(Keys.RETURN)
         sleep(6)
-        handle_cards(driver)
+        handle_cards(driver, topic)
