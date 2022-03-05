@@ -2,7 +2,6 @@ import csv
 
 from msedge.selenium_tools import EdgeOptions, Edge
 from time import sleep
-# from io import open
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 
@@ -52,17 +51,29 @@ def handle_cards(driver, topic):
     return tweets
 
 
+def round_to_point_five(number):
+    return round(number * 2) / 2
+
+
 def get_tweet_data(card, topic):
-    tweet_handle = card.find_element_by_xpath('.//span[contains(text(),"@")]').text
-    tweet_username = card.find_element_by_xpath('.//span').text
     try:
+        tweet_handle = card.find_element_by_xpath('.//span[contains(text(),"@")]').text
+        tweet_username = card.find_element_by_xpath('.//span').text
         tweet_date_time = card.find_element_by_xpath('.//time').get_attribute('dateTime')
+        tweet_economic_policy = constants.accountMap[tweet_handle][0]
+        tweet_social_policy = constants.accountMap[tweet_handle][1]
+        (tweet_content, tweet_language) = get_tweet_content_and_language(card)
+        tweet = {'handle': tweet_handle, 'username': tweet_username, 'timestamp': tweet_date_time,
+                 'content': tweet_content,
+                 'topic': topic, 'language': tweet_language,
+                 'economic_policy': tweet_economic_policy,
+                 'social_policy': tweet_social_policy,
+                 'economic_policy_rounded': round_to_point_five(tweet_economic_policy),
+                 'social_policy_rounded': round_to_point_five(tweet_social_policy),
+                 }
+        return tweet
     except NoSuchElementException:
         return
-    (tweet_content, tweet_language) = get_tweet_content_and_language(card)
-    tweet = {'handle': tweet_handle, 'username': tweet_username, 'timestamp': tweet_date_time, 'content': tweet_content,
-             'topic': topic, 'language': tweet_language}
-    return tweet
 
 
 options = EdgeOptions()
@@ -82,22 +93,31 @@ password = driver.find_element_by_xpath('//input[@name="password"]')
 password.send_keys(constants.password)
 password.send_keys(Keys.RETURN)
 
-query = 'kosovo (from:avucic OR from:adv_djukanovic OR from:SerbianPM OR from:TomaMomirovic OR from:Nevena_Djuric93 OR from:AcaSapic OR from:ZoranT11 OR from:Vladimir_Orlic OR from:VucevicM OR from:markodjuric OR from:NesaStefanovic OR from:MarijanNSS OR from:Jakssa077 OR from:VjericaR OR from:AlekSeselj OR from:NemanjaSarovic OR from:BoskoObradovic OR from:SPDveri OR from:NovaStranka OR from:ArisMovsesijan OR from:demokrate OR from:ZoranLutovac OR from:SutanovacDragan OR from:PartizanusV)'
+#query = 'kosovo (from:avucic OR from:adv_djukanovic OR from:SerbianPM OR from:TomaMomirovic OR from:Nevena_Djuric93 OR from:AcaSapic OR from:ZoranT11 OR from:Vladimir_Orlic OR from:VucevicM OR from:markodjuric OR from:NesaStefanovic OR from:MarijanNSS OR from:Jakssa077 OR from:VjericaR OR from:AlekSeselj OR from:NemanjaSarovic OR from:BoskoObradovic OR from:SPDveri OR from:NovaStranka OR from:ArisMovsesijan OR from:demokrate OR from:ZoranLutovac OR from:SutanovacDragan OR from:PartizanusV)'
 tweet_ids = set()
 tweets = []
+sleep(5)
 for topic in constants.queries.keys():
     for query in constants.queries[topic]:
-        sleep(4)
         search = driver.find_element_by_xpath('//input[@placeholder="Search Twitter"]')
         search.send_keys(Keys.CONTROL + "a")
         search.send_keys(Keys.DELETE)
         search.send_keys(query)
         search.send_keys(Keys.RETURN)
         sleep(6)
+        try:
+
+            newSearch = driver.find_element_by_xpath('//a[contains(text()="Search instead for ")]')
+            newSearch.send_keys(Keys.RETURN)
+            print("_________________________ FOLLOWING LINK_____________________________")
+            sleep(6)
+        except NoSuchElementException:
+            ""
         handle_cards(driver, topic)
 
 with open('tweet_data.csv', 'w', encoding='utf8', newline='') as f:
-    header = ['handle', 'username', 'timestamp', 'content', 'topic', 'language']
+    header = ['handle', 'username', 'timestamp', 'content', 'topic', 'language', 'economic_policy', 'social_policy',
+              'economic_policy_rounded', 'social_policy_rounded']
     writer = csv.DictWriter(f, fieldnames=header)
     writer.writeheader()
     print(len(tweets))
