@@ -47,7 +47,27 @@ accountMap = {
     '@XXLTulip': (-0.9, 1),
     '@BorisTadic58': (0.3, 0.6),
     '@brankoruzicsps': (-0.7, 0.6),
-    '@AAnticBG': (-0.8, 0.5)
+    '@AAnticBG': (-0.8, 0.5),
+    # 
+    '@BrajanBrkovic': (-1, 0.5),
+    '@MiranPogacar': (-0.9, -0.1),
+    '@P_Socijalista': (-0.8, 1),
+    '@nedavimobgd': (-0.3, 0),
+    '@partijarada': (-0.7, 0.5),
+    '@ZelenaStrankaRS': (-0.3, -0.4),
+    '@FantomiSRB': (-0.7, -0.7),
+    '@NKPJ_Srbija': (-1, 1),
+    '@skoj_official': (-1, 1),
+    '@Ceda_Jovanovic': (-0.2, 1),
+    '@LDP': ( -0.3, -0.9),
+    '@branislav_lecic': (-0.1, 0.4),
+    '@FHPHLC': (0, -0.9),
+    '@OsfSerbia': (-0.1, -0.7),
+    '@VPartija': (-0.5, 0.5),
+    '@Katalonka4': (-0.6, 0.3),
+    '@ZajednoZaSrbiju': (-0.4, 0.3),
+    '@MORAMO2022': (-0.4, 0.3),
+    '@NoviPlamen': (-0.9, 0.4)
 }
 
 queries = {
