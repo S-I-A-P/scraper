@@ -9,8 +9,9 @@ import constants
 
 
 def get_tweet_content_and_language(card1):
+
     content_div = card1.find_element_by_xpath(
-        'descendant::div[@class="css-901oao r-1fmj7o5 r-37j5jr r-a023e6 r-16dba41 r-rjixqe r-bcqeeo r-bnwqim r-qvutc0"]'
+        'descendant::div[@class="css-901oao r-1nao33i r-37j5jr r-a023e6 r-16dba41 r-rjixqe r-bcqeeo r-bnwqim r-qvutc0"]'
     )
     language = content_div.get_attribute('lang')
     spans = content_div.find_elements_by_xpath('.//span')
@@ -57,6 +58,7 @@ def round_to_point_five(number):
 
 def get_tweet_data(card, topic):
     try:
+
         tweet_handle = card.find_element_by_xpath('.//span[contains(text(),"@")]').text
         tweet_username = card.find_element_by_xpath('.//span').text
         tweet_date_time = card.find_element_by_xpath('.//time').get_attribute('dateTime')
@@ -71,6 +73,8 @@ def get_tweet_data(card, topic):
                  'economic_policy_rounded': round_to_point_five(tweet_economic_policy),
                  'social_policy_rounded': round_to_point_five(tweet_social_policy),
                  }
+
+        print(tweet)
         return tweet
     except NoSuchElementException:
         return
